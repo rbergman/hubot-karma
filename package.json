@@ -1,0 +1,19 @@
+{
+  "name": "hubot-karma",
+  "version": "0.1.0",
+  "description": "A simple karam tracking script for hubot.",
+  "main": "index.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "",
+  "keywords": [
+    "HipChat",
+    "Hubot",
+    "Karma"
+  ],
+  "author": "Robert Bergman",
+  "license": "MIT",
+  "dependencies": {
+  }
+}
