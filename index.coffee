@@ -21,7 +21,6 @@ module.exports = (robot) ->
     response.send "#{targetUser.name} now has #{targetUser.karma} karma."
 
   robot.hear /^karma(?:\s+@?(.*))?$/, (response) ->
-    thisUser = response.message.user
     targetToken = response.match[1]?.trim()
     if not targetToken? or targetToken.toLowerCase() is "all"
       users = robot.brain.users()
