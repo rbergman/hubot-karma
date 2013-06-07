@@ -2,50 +2,59 @@
 #   A simple karma tracking script for hubot.
 #
 # Commands:
-#   karma <mention name>
+#   karma <name>
 #   karma all
-#   <mention name>++
-#   <mention name>--
+#   karma
+#   <name>++
+#   <name>--
 
 module.exports = (robot) ->
 
-  robot.hear /^@?(.*?)(\+\+|--)/, (response) ->
-    user = response.message.user.mention_name
-    mention_name = response.match[1].trim()
-    return response.send "Hey, you can't give yourself karma!" if user is mention_name
+  robot.hear /^@?(.*?)(\+\+|--)\s*$/, (response) ->
+    thisUser = response.message.user
+    targetToken = response.match[1].trim()
+    targetUser = userForToken targetToken, response
+    return if not targetUser
+    return response.send "Hey, you can't give yourself karma!" if thisUser is targetUser
     op = response.match[2]
-    v = inc mention_name, (if op is "++" then 1 else -1)
-    response.send "#{mention_name} now has #{v} karma."
+    targetUser.karma += if op is "++" then 1 else -1
+    response.send "#{targetUser.name} now has #{targetUser.karma} karma."
 
-  robot.hear /^karma (?:@?(.*))?/, (response) ->
-    mention_name = response.match[1].trim()
-    msg =
-      if mention_name.toLowerCase() is "all"
-        all = karma()
-        list = Object.keys(all)
-          .map((k) -> [k, all[k]])
-          .sort((a, b) -> if a[1] < b[1] then 1 else if a[1] > b[1] then -1 else 0)
-          .map((pair) -> pair.reverse().join " ")
-        if list.length > 0
-          "Karma for all known users:\n#{list.join '\n'}"
-        else
-          "I'm not tracking karma for any users yet."
-      else
-        "#{mention_name} has #{get mention_name} karma."
+  robot.hear /^karma(?:\s+@?(.*))?$/, (response) ->
+    thisUser = response.message.user
+    targetToken = response.match[1]?.trim()
+    if not targetToken? or targetToken.toLowerCase() is "all"
+      users = robot.brain.users()
+      list = Object.keys(users)
+        .sort()
+        .map((k) -> [users[k].karma or 0, users[k].name])
+        .sort((line1, line2) -> if line1[0] < line2[0] then 1 else if line1[0] > line2[0] then -1 else 0)
+        .map((line) -> line.join " ")
+      msg = "Karma for all users:\n#{list.join '\n'}"
+    else
+      targetUser = userForToken targetToken, response
+      return if not targetUser
+      msg = "#{targetUser.name} has #{targetUser.karma} karma."
     response.send msg
 
-  karma = ->
-    all = robot.brain.get "karma"
-    if not all
-      all = {}
-      robot.brain.set "karma", all
-    all
+  userForToken = (token, response) ->
+    users = usersForToken token
+    if users.length is 1
+      user = users[0]
+      user.karma ?= 0
+    else if users.length > 1
+      response.send "Be more specific, I know #{users.length} people named like that: #{(u.name for u in users).join ", "}."
+    else
+      response.send "Sorry, I don't recognize the user named '#{token}'."
+    user
 
-  get = (name) ->
-    karma()[name] or 0
+  usersForToken = (token) ->
+    user = robot.brain.userForName token
+    return [user] if user
+    user = userForMentionName token
+    return [user] if user
+    robot.brain.usersForFuzzyName token
 
-  set = (name, v) ->
-    karma()[name] = v
-
-  inc = (name, mod) ->
-    set name, get(name) + mod
+  userForMentionName = (mentionName) ->
+    for id, user of robot.brain.users()
+      return user if mentionName is user.mention_name
