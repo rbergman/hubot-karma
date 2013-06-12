@@ -2,11 +2,11 @@
 #   A simple karma tracking script for hubot.
 #
 # Commands:
-#   karma <name>
-#   karma all
-#   karma
-#   <name>++
-#   <name>--
+#   <name>++ - adds karma to a user
+#   <name>-- - removes karma from a user
+#   karma <name> - shows karma for the named user
+#   karma all - shows all users' karam
+#   karma - shows all users' karam
 
 module.exports = (robot) ->
 
