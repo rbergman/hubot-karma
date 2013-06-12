@@ -5,8 +5,8 @@
 #   <name>++ - adds karma to a user
 #   <name>-- - removes karma from a user
 #   karma <name> - shows karma for the named user
-#   karma all - shows all users' karam
-#   karma - shows all users' karam
+#   karma all - shows all users' karama
+#   karma - shows all users' karama
 
 module.exports = (robot) ->
 
