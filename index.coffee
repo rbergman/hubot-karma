@@ -13,6 +13,7 @@ module.exports = (robot) ->
   robot.hear /^@?(.*?)(\+\+|--)\s*$/, (response) ->
     thisUser = response.message.user
     targetToken = response.match[1].trim()
+    return if not targetToken
     targetUser = userForToken targetToken, response
     return if not targetUser
     return response.send "Hey, you can't give yourself karma!" if thisUser is targetUser
